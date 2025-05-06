@@ -13,12 +13,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: "3.11"
 
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v2
@@ -33,8 +33,6 @@ jobs:
         working-directory: ./MLProject
         run: |
           mkdir -p data
-          mkdir -p models
-
           echo "Ensuring data exists for demonstration"
           if [ -f "data/preprocessed_data.csv" ]; then
             echo "Using existing preprocessed data"
@@ -47,7 +45,7 @@ jobs:
             echo "4.0,5.0,1" >> data/preprocessed_data.csv
           fi
 
-          # Run MLflow Project
+          # Jalankan MLflow Project
           mlflow run . --entry-point train \
             -P data_path=data/preprocessed_data.csv \
             -P model_output=models/model.pkl \
@@ -55,19 +53,19 @@ jobs:
             -P random_state=42
 
       - name: Upload Model Artifact to GitHub
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ml-model
           path: MLProject/models/model.pkl
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: ./MLProject
           push: true
