@@ -1,0 +1,17 @@
+# Gunakan base image dengan Miniconda
+FROM continuumio/miniconda3
+
+# Tentukan direktori kerja di dalam container
+WORKDIR /app
+
+# Salin semua file project ke dalam container
+COPY . /app
+
+# Salin dan install environment dari conda.yaml
+RUN conda env create -f conda.yaml
+
+# Aktifkan shell dengan conda environment
+SHELL ["conda", "run", "-n", "mlflow-env", "/bin/bash", "-c"]
+
+# Jalankan skrip modelling.py saat container dijalankan
+CMD ["conda", "run", "-n", "mlflow-env", "python", "modelling.py"]

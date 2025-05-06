@@ -2,72 +2,73 @@ name: ML Workflow CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:  # Allows manual triggering
+    branches: [main]
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   train_and_deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-        
-    - name: Install Conda
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        miniconda-version: "latest"
-        activate-environment: ml-workflow
-        environment-file: MLProject/conda.yaml
-        auto-activate-base: false
-        
-    - name: Train Model
-      shell: bash -l {0}
-      working-directory: ./MLProject
-      run: |
-        mkdir -p data
-        echo "Ensuring data exists for demonstration"
-        # Copy preprocessed data if it exists, otherwise use sample data
-        if [ -f "data/preprocessed_data.csv" ]; then
-          echo "Using existing preprocessed data"
-        else
-          echo "Creating sample data for demonstration"
-          echo "feature1,feature2,target" > data/preprocessed_data.csv
-          echo "1.0,2.0,0" >> data/preprocessed_data.csv
-          echo "2.0,3.0,1" >> data/preprocessed_data.csv
-          echo "3.0,4.0,0" >> data/preprocessed_data.csv
-          echo "4.0,5.0,1" >> data/preprocessed_data.csv
-        fi
-        
-        # Run MLflow Project
-        mlflow run . --entry-point train \
-          --param-list data_path=data/preprocessed_data.csv \
-          --param-list model_output=models/model.pkl \
-          --param-list test_size=0.2 \
-          --param-list random_state=42
-      
-    - name: Upload Model Artifact to GitHub
-      uses: actions/upload-artifact@v2
-      with:
-        name: ml-model
-        path: MLProject/models/model.pkl
-        
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      
-    - name: Build and Push Docker Image
-      uses: docker/build-push-action@v2
-      with:
-        context: ./MLProject
-        push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ml-workflow:latest,${{ secrets.DOCKER_HUB_USERNAME }}/ml-workflow:${{ github.sha }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: "latest"
+          activate-environment: ml-workflow
+          environment-file: MLProject/conda.yaml
+          auto-activate-base: false
+
+      - name: Train Model
+        shell: bash -l {0}
+        working-directory: ./MLProject
+        run: |
+          mkdir -p data
+          mkdir -p models
+
+          echo "Ensuring data exists for demonstration"
+          if [ -f "data/preprocessed_data.csv" ]; then
+            echo "Using existing preprocessed data"
+          else
+            echo "Creating sample data for demonstration"
+            echo "feature1,feature2,target" > data/preprocessed_data.csv
+            echo "1.0,2.0,0" >> data/preprocessed_data.csv
+            echo "2.0,3.0,1" >> data/preprocessed_data.csv
+            echo "3.0,4.0,0" >> data/preprocessed_data.csv
+            echo "4.0,5.0,1" >> data/preprocessed_data.csv
+          fi
+
+          # Run MLflow Project
+          mlflow run . --entry-point train \
+            -P data_path=data/preprocessed_data.csv \
+            -P model_output=models/model.pkl \
+            -P test_size=0.2 \
+            -P random_state=42
+
+      - name: Upload Model Artifact to GitHub
+        uses: actions/upload-artifact@v2
+        with:
+          name: ml-model
+          path: MLProject/models/model.pkl
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./MLProject
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ml-workflow:latest,${{ secrets.DOCKER_HUB_USERNAME }}/ml-workflow:${{ github.sha }}
