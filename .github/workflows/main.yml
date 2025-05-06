@@ -1,4 +1,4 @@
-name: ML Workflow CI
+name: Workflow CI
 
 on:
   push:
