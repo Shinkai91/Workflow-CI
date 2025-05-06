@@ -1,1 +1,1 @@
-Docker Image: https://hub.docker.com/r/yosia19/air-quality-model
+Docker Image: https://hub.docker.com/r/yosia19/ml-workflow
