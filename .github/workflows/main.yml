@@ -1,25 +1,20 @@
 name: Workflow CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch: # Allows manual triggering
-
 jobs:
   train_and_deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -27,7 +22,6 @@ jobs:
           activate-environment: ml-workflow
           environment-file: MLProject/conda.yaml
           auto-activate-base: false
-
       - name: Train Model
         shell: bash -l {0}
         working-directory: ./MLProject
@@ -44,26 +38,22 @@ jobs:
             echo "3.0,4.0,0" >> data/preprocessed_data.csv
             echo "4.0,5.0,1" >> data/preprocessed_data.csv
           fi
-
-          # Jalankan MLflow Project
+          # Run MLflow Project
           mlflow run . --entry-point train \
             -P data_path=data/preprocessed_data.csv \
             -P model_output=models/model.pkl \
             -P test_size=0.2 \
             -P random_state=42
-
       - name: Upload Model Artifact to GitHub
-        uses: actions/upload-artifact@v3.1.2 # Update to a specific version
+        uses: actions/upload-artifact@v4
         with:
           name: ml-model
           path: MLProject/models/model.pkl
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
