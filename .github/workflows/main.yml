@@ -25,6 +25,9 @@ jobs:
       - name: Train Model
         shell: bash -l {0}
         working-directory: ./MLProject
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
         run: |
           mkdir -p data
           echo "Ensuring data exists for demonstration"
@@ -32,18 +35,18 @@ jobs:
             echo "Using existing preprocessed data"
           else
             echo "Creating sample data for demonstration"
-            echo "feature1,feature2,target" > data/preprocessed_data.csv
-            echo "1.0,2.0,0" >> data/preprocessed_data.csv
-            echo "2.0,3.0,1" >> data/preprocessed_data.csv
-            echo "3.0,4.0,0" >> data/preprocessed_data.csv
-            echo "4.0,5.0,1" >> data/preprocessed_data.csv
+            echo "feature1,feature2,target,AH" > data/preprocessed_data.csv
+            echo "1.0,2.0,0,50.5" >> data/preprocessed_data.csv
+            echo "2.0,3.0,1,55.2" >> data/preprocessed_data.csv
+            echo "3.0,4.0,0,48.9" >> data/preprocessed_data.csv
+            echo "4.0,5.0,1,52.7" >> data/preprocessed_data.csv
           fi
           # Run MLflow Project
-          mlflow run . --entry-point train \
-            -P data_path=data/preprocessed_data.csv \
-            -P model_output=models/model.pkl \
-            -P test_size=0.2 \
-            -P random_state=42
+          python modelling.py \
+            --data_path=data/preprocessed_data.csv \
+            --model_output=models/model.pkl \
+            --test_size=0.2 \
+            --random_state=42
       - name: Upload Model Artifact to GitHub
         uses: actions/upload-artifact@v4
         with:

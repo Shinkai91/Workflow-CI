@@ -6,14 +6,8 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, e
 import numpy as np
 import mlflow
 import mlflow.sklearn
-import dagshub
 import os
 import joblib
-
-# Inisialisasi koneksi ke DagsHub (ganti dengan repo-mu)
-dagshub.init(repo_owner='Shinkai91', repo_name='air-quality-model', mlflow=True)
-mlflow.set_tracking_uri("https://dagshub.com/Shinkai91/air-quality-model.mlflow")
-mlflow.set_experiment("air-quality-prediction")
 
 # CLI arguments
 parser = argparse.ArgumentParser()
@@ -22,6 +16,23 @@ parser.add_argument("--model_output", type=str, required=True)
 parser.add_argument("--test_size", type=float, default=0.2)
 parser.add_argument("--random_state", type=int, default=42)
 args = parser.parse_args()
+
+# Check if DagsHub credentials are available
+if os.environ.get('DAGSHUB_TOKEN') and os.environ.get('DAGSHUB_USERNAME'):
+    # Set up MLflow tracking with DagsHub
+    os.environ['MLFLOW_TRACKING_USERNAME'] = os.environ.get('DAGSHUB_USERNAME')
+    os.environ['MLFLOW_TRACKING_PASSWORD'] = os.environ.get('DAGSHUB_TOKEN')
+    mlflow.set_tracking_uri("https://dagshub.com/Shinkai91/air-quality-model.mlflow")
+    mlflow.set_experiment("air-quality-prediction")
+    use_remote_tracking = True
+    print("Using remote MLflow tracking on DagsHub")
+else:
+    # Use local tracking if credentials aren't available
+    print("DagsHub credentials not found. Using local MLflow tracking")
+    os.makedirs('mlruns', exist_ok=True)
+    mlflow.set_tracking_uri("file:./mlruns")
+    mlflow.set_experiment("air-quality-prediction-local")
+    use_remote_tracking = False
 
 # Load data
 data = pd.read_csv(args.data_path)
@@ -72,5 +83,9 @@ with mlflow.start_run():
     mlflow.log_artifact(args.model_output)
 
     print("✅ Model training selesai dan disimpan:", args.model_output)
-    print("📍 Lihat hasil tracking MLflow di DagsHub:")
-    print("🔗 https://dagshub.com/Shinkai91/air-quality-model.mlflow")
+    
+    if use_remote_tracking:
+        print("📍 Lihat hasil tracking MLflow di DagsHub:")
+        print("🔗 https://dagshub.com/Shinkai91/air-quality-model.mlflow")
+    else:
+        print("📍 MLflow tracking tersimpan secara lokal di: ./mlruns")
