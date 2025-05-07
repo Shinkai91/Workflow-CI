@@ -13,5 +13,8 @@ RUN conda env create -f conda.yaml
 # Aktifkan shell dengan conda environment
 SHELL ["conda", "run", "-n", "mlflow-env", "/bin/bash", "-c"]
 
+# Deklarasikan port yang akan digunakan
+EXPOSE 5005
+
 # Jalankan skrip modelling.py saat container dijalankan
 CMD ["conda", "run", "-n", "mlflow-env", "python", "modelling.py"]
