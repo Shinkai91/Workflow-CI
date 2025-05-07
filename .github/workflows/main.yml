@@ -5,6 +5,7 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch: # Allows manual triggering
+
 jobs:
   train_and_deploy:
     runs-on: ubuntu-latest
@@ -63,7 +64,7 @@ jobs:
         working-directory: ./MLProject
         run: |
           # Contoh perintah untuk mendapatkan run_id terakhir
-          echo "RUN_ID=$(mlflow runs list -v | grep -v "Run ID" | head -1 | awk '{print $4}')" >> $GITHUB_ENV
+          echo "RUN_ID=$(mlflow runs list -v | grep -v 'Run ID' | head -1 | awk '{print $4}')" >> $GITHUB_ENV
           echo "Latest MLflow run_id: ${{ env.RUN_ID }}"
 
       - name: Install Python dependencies
@@ -112,7 +113,7 @@ jobs:
                   fields="id"
               ).execute()
               
-              print(f"File berhasil diupload dengan ID: {file.get(\"id\")}")
+              print(f"File berhasil diupload dengan ID: {file.get('id')}")
               
           except Exception as e:
               print(f"Error uploading to Google Drive: {e}")
