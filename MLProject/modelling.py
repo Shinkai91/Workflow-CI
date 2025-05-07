@@ -89,3 +89,22 @@ with mlflow.start_run():
         print("🔗 https://dagshub.com/Shinkai91/air-quality-model.mlflow")
     else:
         print("📍 MLflow tracking tersimpan secara lokal di: ./mlruns")
+
+    # Register the model to the Model Registry
+    run_id = mlflow.active_run().info.run_id  # Get the run ID
+    model_uri = f"runs:/{run_id}/model"  # Model URI from the run ID
+    registered_model_name = "air-quality-prediction"  # Model name in the registry
+
+    try:
+        mlflow.register_model(model_uri=model_uri, name=registered_model_name)
+        print(f"✅ Model registered as '{registered_model_name}'")
+    except Exception as e:
+        print(f"❌ Failed to register model: {e}")
+
+    # Instructions for serving the model
+    if use_remote_tracking:
+        print("📍 To serve the model, use the following command:")
+        print(f"🔗 mlflow models serve -m 'models:/{registered_model_name}/latest' --port 5000")
+    else:
+        print("📍 To serve the model locally, use the following command:")
+        print(f"🔗 mlflow models serve -m '{model_uri}' --port 5000")
