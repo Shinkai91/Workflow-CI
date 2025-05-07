@@ -76,8 +76,7 @@ jobs:
         env:
           GOOGLE_DRIVE_CREDENTIALS: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
         run: |
-          # Gunakan path yang sesuai untuk service-account.json
-          cp "C:/Users/Shinkai/Pictures/Workflow-CI/MLProject/service-account.json" ./service-account.json
+          echo "$GOOGLE_DRIVE_CREDENTIALS" > service-account.json
 
           python -c '
           from googleapiclient.discovery import build
