@@ -107,4 +107,4 @@ with mlflow.start_run():
         print(f"🔗 mlflow models serve -m 'models:/{registered_model_name}/latest' --port 5000")
     else:
         print("📍 To serve the model locally, use the following command:")
-        print(f"🔗 mlflow models serve -m '{model_uri}' --port 5000")
+        # print(f"🔗 mlflow models serve -m '{model_uri}' --port 5000")
